@@ -11,8 +11,7 @@ router.get('/products/:productId',logParams, productController.getProductById);
 router.post('/products', productController.createProduct);
 router.put('/products/:productId', productController.updateProduct);
 router.delete('/products/:productId', productController.deleteProduct);
-// Ruta para agregar al carrito el producto 
-//router.post('/cart', authMiddleware, productController.addToCart);
+
 
 
 export default router
