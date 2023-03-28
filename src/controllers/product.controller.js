@@ -95,7 +95,6 @@ export default {
 
  // En este ejemplo, el controlador addToCart tiene la lógica para agregar un producto al carrito del usuario. Primero, se busca el producto por su ID en la base de datos y se comprueba que haya suficiente cantidad disponible. Luego, se busca al usuario por su ID en la base de datos y se actualiza su carrito de compras con el producto agregado. Finalmente, se envía una respuesta al cliente con el carrito actualizado.
   
-  // que este es solo un ejemplo y que el código real puede variar dependiendo de cómo hayas estructurado tu aplicación y las necesidades específicas de tu proyecto.
   
   
   

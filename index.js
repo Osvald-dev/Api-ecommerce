@@ -1,11 +1,19 @@
 import express from 'express'
 const app = express();
 import mongoose from 'mongoose';
+import CONFIG from './src/config/server.config.js';
 import routerUser from './src/routes/user/user.router.js'
 import routerProduct from './src/routes/product/product.router.js'
 import routerCart from './src/routes/cart/cart.router.js'
-// Conecta con la base de datos MongoDB local
-mongoose.connect('mongodb://localhost:27017/nombre-de-tu-base-de-datos', {useNewUrlParser: true, useUnifiedTopology: true})
+
+
+
+mongoose.connect('mongodb://localhost:27017/e-commerce',
+ {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+  useCreateIndex: true,
+})
   .then(() => {
     console.log('Conexión exitosa a MongoDB');
   })
@@ -13,21 +21,20 @@ mongoose.connect('mongodb://localhost:27017/nombre-de-tu-base-de-datos', {useNew
     console.log('Error de conexión:', error);
   });
 
-// Middleware para parsear JSON en las peticiones
 app.use(express.json());
 
-// Usa las rutas definidas en routes.js
+
 app.use('/api', routerUser);
 app.use('/api', routerProduct);
 app.use('/api', routerCart)
 
-// Inicia el servidor en el puerto 3000
-app.listen(3000, () => {
-  console.log('Servidor iniciado en el puerto 3000');
-});
-//En este ejemplo, estamos importando las rutas definidas en routes.js y utilizando el método app.use('/ruta', nombre_de_la_ruta) para agregarlas a nuestra aplicación. En este caso, las rutas estarán disponibles en localhost:3000/api/ruta.
+const server = httpServer.listen(CONFIG.PORT, CONFIG.HOST, () => {
+  console.log(`Server is up and running on port => ${CONFIG.PORT}`)
+})
 
-
-
+server.on('error', (error) => {
+  console.log('There was an unexpected error in the server')
+  console.log(error)
+})
 
 

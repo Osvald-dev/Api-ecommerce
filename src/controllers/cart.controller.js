@@ -6,15 +6,12 @@ import Cart from '../models/cart.js'
 export default {
     async getCart(req, res, next) {
         try {
-          // Buscamos el carrito del usuario actual
           const cart = await Cart.findOne({ user: req.user._id }).populate('items.product');
     
-          // Si el carrito no existe, lo creamos
           if (!cart) {
             return res.status(200).json({ message: 'Carrito vacío' });
           }
     
-          // Devolvemos los elementos del carrito
           return res.status(200).json({ items: cart.items });
         } catch (error) {
           return next(error);
@@ -25,18 +22,15 @@ export default {
         try {
           const { productId, quantity } = req.body;
     
-          // Buscar el producto en la base de datos
           const product = await Product.findById(productId);
           if (!product) {
             throw new Error('Product not found');
           }
     
-          // Comprobar que haya suficiente cantidad disponible
           if (product.quantity < quantity) {
             throw new Error('Not enough quantity available');
           }
     
-          // Agregar el producto al carrito
           const user = await User.findById(req.user._id);
           if (!user) {
             throw new Error('User not found');
@@ -56,7 +50,6 @@ export default {
           user.cart = cart;
           await user.save();
     
-          // Responder con el carrito actualizado
           res.status(200).json({
             message: 'Product added to cart successfully',
             cart,
@@ -66,7 +59,7 @@ export default {
         }
       },
 
-      updateCartItem: async (req, res, next) => {
+      async updateCartItem (req, res, next)  {
         try {
           const { _id: userId } = req.user;
           const { id } = req.params;
@@ -78,7 +71,7 @@ export default {
         }
       },
 
-      removeCartItem: async (req, res, next) => {
+      async removeCartItem (req, res, next) {
         try {
           const { _id: userId } = req.user;
           const { id } = req.params;
