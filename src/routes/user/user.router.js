@@ -1,14 +1,17 @@
 import express from 'express';
 const router = express.Router();
-import authController from '../../middleware/authController.js';
+import userController from '../../controllers/user.controller.js';
 
+router.get('/user-info', userController.getUserInfo);
 
-router.post('/register', authController.register);
+router.post('/register', userController.register);
 
+router.post('/login', userController.login);
 
-router.post('/login', authController.login);
+router.put('/:userId', userController.updateUserInfo)
 
+router.put('/change-password/:userId', userController.changePassword)
 
-router.post('/logout', authController.logout);
+router.post('/logout', userController.logout);
 
 export default router;

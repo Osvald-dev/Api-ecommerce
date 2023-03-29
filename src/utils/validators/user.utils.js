@@ -71,12 +71,7 @@ const isValidRegister = (address, email, name, password, phone) => {
       ) return false
       return true
     }
+    
+    
 
-const isValidPassword = (password, encriptedPassword) => {
-  try {
-    return bcrypt.compareSync(password, encriptedPassword);
-  } catch (error) {
-    console.log(`Error al comparar las contraseñas`) }
-  }
-
-export  {isDeleteValid ,isValidLogin,isValidPassword,isValidRegister}
+export  {isDeleteValid ,isValidLogin,isValidRegister}

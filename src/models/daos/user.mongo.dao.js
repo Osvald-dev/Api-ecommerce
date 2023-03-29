@@ -1,18 +1,15 @@
-import User from '../models/user.js'
-
+import User from '../user.js'
 
 class UserMongoDao {
-    // Método para buscar un usuario por su ID
-    async findById(userId) {
+    async findById(id) {
       try {
-        const user = await User.findById(userId);
+        const user = await User.findById(id);
         return user;
       } catch (error) {
         throw error;
       }
     }
   
-    // Método para buscar un usuario por su correo electrónico
      async findByEmail(email) {
       try {
         const user = await User.findOne({ email });
@@ -22,7 +19,6 @@ class UserMongoDao {
       }
     }
   
-    // Método para crear un nuevo usuario
     async create(user) {
       try {
         const newUser = new User(user);
@@ -34,16 +30,15 @@ class UserMongoDao {
     }
   
     // Método para actualizar un usuario existente
-    async update(userId, updateData) {
+    async update(id, updateData) {
       try {
-        const user = await User.findByIdAndUpdate(userId, updateData, { new: true });
+        const user = await User.findByIdAndUpdate(id, updateData, { new: true });
         return user;
       } catch (error) {
         throw error;
       }
     }
   
-    // Método para eliminar un usuario existente
     async delete(userId) {
       try {
         await User.findByIdAndDelete(userId);

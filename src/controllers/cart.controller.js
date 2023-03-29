@@ -26,7 +26,7 @@ export default {
           if (!product) {
             throw new Error('Product not found');
           }
-    
+          
           if (product.quantity < quantity) {
             throw new Error('Not enough quantity available');
           }
