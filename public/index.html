@@ -63,6 +63,30 @@
     <form action="/logout" method="POST">
       <button type="submit">Cerrar sesión</button>
     </form>
+    <form onsubmit="enviarMensaje(); return false;">
+      <input id="mensaje" type="text">
+      <button>Enviar</button>
+    </form>
+    <script src="/socket.io/socket.io.js"></script>
+          <script>
+            const socket = io();
+              socket.on('connect', () => {
+              console.log('Conectado al servidor de Websockets');
+            });
+            
+              socket.on('disconnect', () => {
+              console.log('Desconectado del servidor de Websockets');
+            });
+            
+              socket.on('chat message', (msg) => {
+              console.log(`Mensaje recibido: ${msg}`);
+            });
+            
+            function enviarMensaje() {
+              const msg = document.getElementById('mensaje').value;
+              socket.emit('chat message', msg);
+            }
+          </script>
      --> -->
   </body>
 </html>

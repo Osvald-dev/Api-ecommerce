@@ -59,10 +59,7 @@ userController.login = async (req, res) => {
     if (!isPasswordValid) {
       return res.status(401).json({ message: 'Email o contraseña incorrectos' });
     }
-    if (user.role !== 'admin') {
-      return res.status(403).json({ message: 'No tiene permiso para acceder a esta función' });
-    }
-    
+
     let sessionDuration = process.env.SESSION_DURATION;
     if (user.role === 'admin') {
       sessionDuration = process.env.ADMIN_SESSION_DURATION;

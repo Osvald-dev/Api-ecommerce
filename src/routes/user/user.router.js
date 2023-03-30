@@ -1,12 +1,13 @@
 import express from 'express';
 const router = express.Router();
 import userController from '../../controllers/user.controller.js';
+import  isAdmin    from '../../middleware/isAdmin.middleware.js';
 
-router.get('/user-info', userController.getUserInfo);
+router.get('/user-info',isAdmin, userController.getUserInfo);
 
 router.post('/register', userController.register);
 
-router.post('/login', userController.login);
+router.post('/login',isAdmin, userController.login);
 
 router.put('/:userId', userController.updateUserInfo)
 
