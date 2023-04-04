@@ -1,15 +1,28 @@
-import express  from 'express';
+import  express  from 'express';
+import {
+  addProductToCart,
+  createCart,
+  deleteCart,
+  getAllCart,
+  getCart,
+  addAllProductsToCart,
+  updateShippingCart
+} from '../../controllers/cart.controller.js'
+
 const router = express.Router();
-import cartController from '../../controllers/cart.controller.js'
-import authMiddleware from '../../middleware/auth.middleware.js'
 
-// Rutas para el carrito de compras
-router.get('/cart', cartController.getCart);
+router.get('/cart', getAllCart)
 
-router.post('/cart',authMiddleware, cartController.addToCart);
+router.get('/cart/:id', getCart)
 
-router.put('/cart/:itemId', cartController.updateCartItem);
+router.post('/cart', createCart)
 
-router.delete('/cart/:itemId', cartController.removeCartItem);
+router.delete('/cart/:id', deleteCart)
 
-export default router ;
+router.put('/cart/shipping/:id', updateShippingCart)
+
+router.put('/cart/:id', addProductToCart)
+
+router.post('/cart/products', addAllProductsToCart)
+
+export default router

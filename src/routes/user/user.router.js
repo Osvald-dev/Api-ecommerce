@@ -1,18 +1,19 @@
 import express from 'express';
 const router = express.Router();
-import userController from '../../controllers/user.controller.js';
+import {registerController, loginController, getUserInfoController, 
+    updateUserInfoController, changePasswordController, logoutController} from '../../controllers/user.controller.js';
 import  isAdmin    from '../../middleware/isAdmin.middleware.js';
 
-router.get('/user-info',isAdmin, userController.getUserInfo);
+router.get('/user-info',isAdmin, getUserInfoController); //al probar el end-point es necesario ingresar el password de ADMIN
 
-router.post('/register', userController.register);
+router.post('/register', registerController);
 
-router.post('/login',isAdmin, userController.login);
+router.post('/login',loginController);
 
-router.put('/:userId', userController.updateUserInfo)
+router.put('/:userId', updateUserInfoController)
 
-router.put('/change-password/:userId', userController.changePassword)
+router.put('/change-password/:userId', changePasswordController)
 
-router.post('/logout', userController.logout);
+router.get('/logout', logoutController);
 
 export default router;

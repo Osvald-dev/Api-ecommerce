@@ -1,44 +1,28 @@
 import jwt from "jsonwebtoken";
 import dotenv from 'dotenv';
-import bcrypt from 'bcrypt';
-import User from '../models/user.js';
-import mongoose from "mongoose";
-import { UserMongoDao } from '../models/daos/user.mongo.dao.js';
+import userSchema from '../models/user.js';
+import {registerUserService, loginUserService,
+getUserInfoService, updateUserService,
+changePasswordService, logoutUserService} from '../services/user/user.service.js';
+import isAdmin from "../middleware/isAdmin.middleware.js";
 
-
-const userController = {};
-const userMongoDao = new UserMongoDao();
 
 /**
  * Registra un nuevo usuario
  * @param {Object} req - objeto de solicitud HTTP
  * @param {Object} res - objeto de respuesta HTTP
  */
-userController.register = async (req, res) => {
+const registerController = async (req, res) => {
  
-   try {
+  try {
     const { name, email, password } = req.body;
-    if (!req.body.name || !req.body.email || !req.body.password) {
-      return res.status(400).json({ message: 'Falta información en el formulario' });
-    }
- 
-    // Verificar si el usuario ya existe en la base de datos
-    const existingUser = await userMongoDao.findByEmail(email);
-    if (existingUser) {
-      return res.status(400).json({ message: 'El usuario ya existe' });
-    }
-    const newUser = new User({
-        name,
-        email,
-        password: await bcrypt.hash(password, 10), // Hashear la contraseña antes de guardarla
-      });
- 
-    const createdUser = await userMongoDao.create(newUser);
-    res.status(201).json({ message: 'Usuario registrado exitosamente', user: createdUser  });
-    
+
+     const createUser = await registerUserService (name, email, password);
+     res.status(201).json({message: 'Usuario registrado exitosamente', user: createUser})
+  
   } catch (error) {
-    console.log(error.message);
-    res.status(500).json({ message: 'Ocurrió un error al registrar el usuario' });
+    console.log(error.message)
+      res.status(500).json({ message: 'Ocurrió un error al registrar el usuario' });
   }
 }
 
@@ -48,103 +32,81 @@ userController.register = async (req, res) => {
  * @param {Object} res - objeto de respuesta HTTP
  */
 //login for users or admin
-userController.login = async (req, res) => {
+const loginController = async (req, res) => {
   try {
     const { email, password } = req.body;
-    const user = await userMongoDao.findByEmail(email);
-    if (!user) {
-      return res.status(401).json({ message: 'Email o contraseña incorrectos' });
-    }
-    const isPasswordValid = await bcrypt.compare(password, user.password);
-    if (!isPasswordValid) {
-      return res.status(401).json({ message: 'Email o contraseña incorrectos' });
-    }
+    
+    const token = await loginUserService(email, password);
 
-    let sessionDuration = process.env.SESSION_DURATION;
-    if (user.role === 'admin') {
-      sessionDuration = process.env.ADMIN_SESSION_DURATION;
-    }
-    req.session.userId = user._id;
-    req.session.cookie.maxAge = parseInt(sessionDuration);
-
-    const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET, { expiresIn: sessionDuration });
-
-    req.session.userId = user._id;
-    req.session.cookie.maxAge = parseInt(sessionDuration);
+    res.cookie("user", token, { maxAge: process.env.SESSION_DURATION * 60 * 1000 });
     res.status(200).json({ token });
+  } catch (error) {
+    console.log(`error de : ${error.message}`);
+    res.status(401).json({ message: error.message });
+  }
+}
+
+// //only admin
+const getUserInfoController = async (req, res) => {
+  try {
+      const email = req.body.email;
+    //  const password = req.body.password;
+
+      isAdmin(req, res, async() =>{
+        const user = await getUserInfoService(email);
+        res.status(200).json({user})
+      })
+
   }
   catch(error){
-    console.log(`error de : ${error.message}`);
+    console.log(error.message);
+    res.status(500).json({ message: error.message });
   }
- }
-
-
-//only admin
- userController.getUserInfo = async (req, res) => {
+}
+ 
+const updateUserInfoController = async (req, res) =>{
   try {
-  const userId = req.body;
-  const user = await userMongoDao.findById(userId);
-  if (!user) {
-  return res.status(404).json({ message: 'Usuario no encontrado' });
-  }
-  res.status(200).json({ user });
-  } catch (error) {
-  console.log(error.message);
-  res.status(500).json({ message: 'Ocurrió un error al obtener la información del usuario' });
-  }
-  };
-  
-  // only admin
-  userController.updateUserInfo = async (req, res) => {
-  try {
-  const userId = req.params;
-  const { name, email } = req.body;
-  const user = await userMongoDao.findById(userId);
-  if (!user) {
-  return res.status(404).json({ message: 'Usuario no encontrado' });
-  }
-  user.name = name || user.name;
-  user.email = email || user.email;
-  await userMongoDao.update(user);
-  res.status(200).json({ message: 'Información de usuario actualizada exitosamente' });
-  } catch (error) {
-  console.log(error.message);
-  res.status(500).json({ message: 'Ocurrió un error al actualizar la información del usuario' });
-  }
-  };
-  
-  // users & admin
-  userController.changePassword = async (req, res) => {
-    try {
-      const userId = req.params.userId;
-      const { currentPassword, newPassword } = req.body;
-      const user = await userMongoDao.findById( new mongoose.Types.ObjectId(userId));
-      if (!user) {
-        return res.status(404).json({ message: 'Usuario no encontrado' });
-      }
-      const isPasswordValid = await bcrypt.compare(currentPassword, user.password);
-      if (!isPasswordValid) {
-        return res.status(401).json({ message: 'La contraseña actual es incorrecta' });
-      }
-      user.password = await bcrypt.hash(newPassword, 10);
-      await userMongoDao.update(user);
-      res.status(200).json({ message: 'Contraseña actualizada exitosamente' });
-    } catch (error) {
-      console.log(error.message);
-      res.status(500).json({ message: 'Ocurrió un error al cambiar la contraseña del usuario' });
+    const {userId} = req.params;
+    const {name, email} = req.body;
+    const result = await updateUserService(userId, name, email);
+    if (result.success) {
+      res.status(200).json(result);
+    } else {
+      res.status(404).json(result);
     }
-  };
+  } catch (error) {
+    console.log(error.message);
+    res.status(500).json({ message: 'Ocurrió un error al actualizar la información del usuario' });
+  }
+}
   
- // users & admin
-  userController.logout = async (req, res)=> {
+//   // users & admin
+const changePasswordController = async(req, res) =>{
+  try {
+    const userId = req.params.userId
+    const {currentPassword, newPassword} = req.body;
+    const result = await changePasswordService(userId, currentPassword, newPassword);
+    res.status(200).json(result);
+  } catch (error) {
+    console.log(error.message);
+    res.status(500).json({ message: 'Ocurrió un error al cambiar la contraseña del usuario' });
+  }
+}
+//   };
+  
+//  // users & admin
+  const logoutController = async (req, res)=> {
     try {
-      req.session.destroy((err) => {
-        if (err) throw err;
-        res.redirect('/login');
-      });
+      const token = req.headers.authorization.split(" ")[1]; // Obtener token del encabezado de autorización
+      
+      await logoutUserService(token); // Llamar al servicio de logout
+  
+      req.session.destroy(); // Destruir la sesión del usuario
+  
+      res.status(200).json({ message: "Sesión cerrada exitosamente" });
     } catch (error) {
-      console.log(error);
-      res.status(500).send(error);
+      console.log(`Error de logout: ${error.message}`);
+      res.status(500).json({ message: "Ocurrió un error al cerrar la sesión" });
     }
   }
-  export default userController;
+  export  {registerController, loginController, getUserInfoController, updateUserInfoController, changePasswordController, logoutController};

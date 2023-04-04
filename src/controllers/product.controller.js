@@ -1,72 +1,77 @@
-import Product from '../models/products.js'
-import User from '../models/user.js';
+import {getProductById,getAllProducts,deleteProduct,updateProduct,createProduct} from "../services/product/product.service.js";
 
-export default {
 
-  async createProduct(req, res, next) {
+
+  const createProductController = async (req, res, next) =>{
     try {
-        const { name, description, price, quantity } = req.body;
-        const existingProduct = await Product.findOne({ name });
-        if (existingProduct) {
-        throw new Error('Product already exists');
-        }
-       
-        const product = new Product({
-        name,
-        description,
-        price,
-        quantity,
-      });
-      const result = await product.save();
+      const result = await createProduct(req.body);
+
       res.status(201).json({
-        message: 'Product created successfully',
+        message: "Product created successfully",
         product: result,
       });
     } catch (error) {
       next(error);
     }
-  },
+  }
 
-  async updateProduct(req, res, next) {
+  const updateProductController = async(req, res, next) => {
     try {
       const { productId } = req.params;
-      const { name, description, price, quantity } = req.body;
-      const updatedProduct = await Product.findByIdAndUpdate(
+      const {  description,name, price, stock } = req.body;
+      const updatedProduct = await updateProduct(
         productId,
-        {
-          name,
-          description,
-          price,
-          quantity,
-        },
-        { new: true }
+        description,
+        name,
+        price,
+        stock
       );
       res.status(200).json({
-        message: 'Product updated successfully',
+        message: "Product updated successfully",
         product: updatedProduct,
       });
     } catch (error) {
       next(error);
     }
-  },
+  }
 
-  async deleteProduct(req, res, next) {
+  const deleteProductController = async(req, res, next) =>{
     try {
       const { productId } = req.params;
-      await Product.findByIdAndDelete(productId);
+      await deleteProduct(productId);
       res.status(200).json({
-        message: 'Product deleted successfully',
+        message: "Product deleted successfully",
       });
     } catch (error) {
       next(error);
     }
-  },
+  }
 
-
-
-  async getProduct(req, res, next) {
+  const getAllProductsController = async(req, res, next) => {
     try {
-      const products = await Product.find();
+      const products = await getAllProducts();
+      res.status(200).json({
+        message: "Products retrieved successfully",
+        products,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  const  getProductByIdController = async(req, res, next) => {
+    try {
+      const { productId } = req.params;
+      const product = await getProductById(productId);
+      res.status(200).json({ product });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  const getProductsController = async(req, res, next) =>{
+    try {
+      const products = await getProducts();
       res.status(200).json({
         message: 'Products retrieved successfully',
         products,
@@ -74,26 +79,11 @@ export default {
     } catch (error) {
       next(error);
     }
-  },
-
-
-  async getProductById (req, res, next){
-    try {
-        const { productId } = req.params;
-        console.log(productId) // retorna undefined
-        const product = await Product.findById(productId);
-        if (!product) {
-          return res.status(404).json({ message: 'Product not found' });
-        }
-        res.status(200).json({ product });
-      } catch (error) {
-        next(error);
-      }
   }
 
-}
+  export {getAllProductsController, getProductByIdController, getProductsController, 
+    deleteProductController, updateProductController, createProductController}
 
- // En este ejemplo, el controlador addToCart tiene la lógica para agregar un producto al carrito del usuario. Primero, se busca el producto por su ID en la base de datos y se comprueba que haya suficiente cantidad disponible. Luego, se busca al usuario por su ID en la base de datos y se actualiza su carrito de compras con el producto agregado. Finalmente, se envía una respuesta al cliente con el carrito actualizado.
   
   
   
